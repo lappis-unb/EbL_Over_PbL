@@ -35,19 +35,16 @@ class GitHubUserData:
         current_year = datetime.datetime.now().year
 
         for year in range(start_year, current_year + 1):
-            # Define the start and end dates for each year
             from_date = f"{year}-01-01T00:00:00Z"
             to_date = f"{year}-12-31T23:59:59Z"
             user_data_for_year = self._get_user_data_for_year(user, from_date, to_date)
             
-            # Accumulate the data for all years
             total_contributions += user_data_for_year["contributions"]
             for month, count in user_data_for_year["monthly_contributions"].items():
                 monthly_contributions[month] += count
             for key, count in user_data_for_year["contribution_types"].items():
                 contribution_types[key] += count
 
-        # Get additional data like repositories and primary language
         additional_user_data = self._get_additional_user_data(user)
 
         return {
