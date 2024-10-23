@@ -2,7 +2,7 @@ import requests
 import csv
 import datetime
 from collections import defaultdict
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 class GitHubUserData:
     def __init__(self, token: str):
