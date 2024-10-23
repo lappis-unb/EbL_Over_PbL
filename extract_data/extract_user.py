@@ -6,14 +6,14 @@ from typing import List, Set, Dict, Any, Optional
 class GitHubContributors:
     def __init__(self, token: str, organization: str, start_date: str, end_date: str, output_csv: str):
         """
-        Inicializa a classe com as credenciais de autenticação do GitHub e outros parâmetros.
+        Initializes the class with GitHub authentication credentials and other parameters.
 
         Args:
-            token (str): O token de autenticação do GitHub.
-            organization (str): A organização no GitHub.
-            start_date (str): Data de início no formato ISO 8601.
-            end_date (str): Data de término no formato ISO 8601.
-            output_csv (str): Nome do arquivo CSV de saída.
+            token (str): The GitHub authentication token.
+            organization (str): The GitHub organization.
+            start_date (str): Start date in ISO 8601 format.
+            end_date (str): End date in ISO 8601 format.
+            output_csv (str): The name of the output CSV file.
         """
         self.headers = {
             'Authorization': f'token {token}',
@@ -26,10 +26,10 @@ class GitHubContributors:
 
     def get_repositories(self) -> List[str]:
         """
-        Obtém a lista de repositórios da organização.
+        Retrieves the list of repositories from the organization.
 
         Returns:
-            List[str]: Lista de nomes de repositórios.
+            List[str]: A list of repository names.
         """
         repos = []
         url = f'https://api.github.com/orgs/{self.organization}/repos'
@@ -42,13 +42,13 @@ class GitHubContributors:
 
     def get_commits(self, repo: str) -> List[Dict[str, Any]]:
         """
-        Obtém a lista de commits de um repositório específico.
+        Retrieves the list of commits from a specific repository.
 
         Args:
-            repo (str): Nome do repositório.
+            repo (str): The repository name.
 
         Returns:
-            List[Dict[str, Any]]: Lista de commits.
+            List[Dict[str, Any]]: A list of commits.
         """
         commits = []
         url = f'https://api.github.com/repos/{self.organization}/{repo}/commits'
@@ -69,37 +69,37 @@ class GitHubContributors:
                     success = True
                 except requests.exceptions.RequestException as e:
                     attempts += 1
-                    print(f"Erro ao obter commits do repositório {repo}: {e}")
-                    print(f"Tentando novamente ({attempts}/2)...")
-                    time.sleep(5)  # Espera 5 segundos antes de tentar novamente
+                    print(f"Error fetching commits from repository {repo}: {e}")
+                    print(f"Retrying ({attempts}/2)...")
+                    time.sleep(5)
                     if attempts == 2:
-                        print("Máximo de tentativas alcançado. Pulando para o próximo repositório.")
+                        print("Max retries reached. Skipping to the next repository.")
                         url = None
         return commits
 
     @staticmethod
     def get_contributors(commits: List[Dict[str, Any]]) -> Set[str]:
         """
-        Obtém a lista de contribuidores a partir da lista de commits.
+        Retrieves the list of contributors from the commit list.
 
         Args:
-            commits (List[Dict[str, Any]]): Lista de commits.
+            commits (List[Dict[str, Any]]): A list of commits.
 
         Returns:
-            Set[str]: Conjunto de logins de contribuidores.
+            Set[str]: A set of contributor usernames.
         """
         contributors = set()
         for commit in commits:
-            if commit['author']:  # Verifica se o commit tem um autor associado
+            if commit['author']:  
                 contributors.add(commit['author']['login'])
         return contributors
 
     def save_to_csv(self, contributors: Set[str]):
         """
-        Salva a lista de contribuidores em um arquivo CSV.
+        Saves the list of contributors to a CSV file.
 
         Args:
-            contributors (Set[str]): Conjunto de logins de contribuidores.
+            contributors (Set[str]): A set of contributor usernames.
         """
         with open(self.output_csv, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
@@ -110,7 +110,7 @@ class GitHubContributors:
 
     def run(self):
         """
-        Executa o processo completo de obtenção de contribuidores e salvamento em CSV.
+        Runs the complete process of retrieving contributors and saving them to a CSV.
         """
         all_contributors = set()
         repositories = self.get_repositories()
@@ -122,7 +122,6 @@ class GitHubContributors:
         self.save_to_csv(all_contributors)
 
 if __name__ == '__main__':
-    # Substitua esses valores pelos parâmetros desejados
     token = 'token'
     organization = 'organization'
     start_date = '2017-01-01T00:00:00Z'
