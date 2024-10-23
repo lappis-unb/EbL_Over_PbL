@@ -7,10 +7,10 @@ from typing import Dict, Any, List, Optional
 class GitHubUserData:
     def __init__(self, token: str):
         """
-        Inicializa a classe com o token de autenticação do GitHub.
+        Initializes the class with the GitHub authentication token.
 
         Args:
-            token (str): O token de autenticação do GitHub.
+            token (str): The GitHub authentication token.
         """
         self.headers = {
             "Authorization": f"Bearer {token}",
@@ -18,6 +18,16 @@ class GitHubUserData:
         }
 
     def get_user_data(self, user: str) -> Dict[str, Any]:
+        """
+        Retrieves GitHub user data, including contributions, repositories, and primary language.
+
+        Args:
+            user (str): The GitHub username.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing contribution data, repositories, primary language, 
+                            monthly contributions, and types of contributions.
+        """
         total_contributions = 0
         monthly_contributions = defaultdict(int)
         contribution_types = defaultdict(int)
@@ -37,7 +47,7 @@ class GitHubUserData:
             for key, count in user_data_for_year["contribution_types"].items():
                 contribution_types[key] += count
 
-        # Obtenha dados adicionais, como repositórios e linguagem principal
+        # Get additional data like repositories and primary language
         additional_user_data = self._get_additional_user_data(user)
 
         return {
@@ -49,6 +59,17 @@ class GitHubUserData:
         }
     
     def _get_user_data_for_year(self, user: str, from_date: str, to_date: str) -> Dict[str, Any]:
+        """
+        Fetches GitHub user data for a specific year.
+
+        Args:
+            user (str): GitHub username.
+            from_date (str): The start date (in ISO format) of the year to retrieve data from.
+            to_date (str): The end date (in ISO format) of the year to retrieve data from.
+
+        Returns:
+            Dict[str, Any]: Parsed user contribution data for the specified year.
+        """
         query = """
         query($user: String!, $from: DateTime!, $to: DateTime!) {
           user(login: $user) {
@@ -99,29 +120,29 @@ class GitHubUserData:
         if response.status_code == 200:
             data = response.json()
             if "errors" in data:
-                print(f"Erro ao acessar dados do usuário {user}: {data['errors']}")
+                print(f"Error fetching data for user {user}: {data['errors']}")
                 return self._empty_user_data()
             
             user_data = data.get("data", {}).get("user", {})
             if not user_data:
-                print(f"Usuário não encontrado ou sem dados: {user}")
+                print(f"User not found or no data available: {user}")
                 return self._empty_user_data()
             
             return self._parse_user_data(user_data)
         else:
-            print(f"Erro ao acessar dados do usuário {user}: {response.status_code} {response.text}")
+            print(f"Error fetching data for user {user}: {response.status_code} {response.text}")
             return self._empty_user_data()
     
     def _get_additional_user_data(self, user: str) -> Dict[str, Any]:
         """
-        Obtém informações adicionais do usuário, como o número de repositórios
-        e a linguagem de programação principal.
+        Retrieves additional information about the user, such as the number of repositories
+        and the primary programming language.
 
         Args:
-            user (str): Nome do usuário no GitHub.
+            user (str): GitHub username.
 
         Returns:
-            Dict[str, Any]: Informações adicionais, como repositórios e linguagem principal.
+            Dict[str, Any]: Additional user information, such as repositories and primary language.
         """
         query = """
         query($user: String!) {
@@ -148,12 +169,12 @@ class GitHubUserData:
         if response.status_code == 200:
             data = response.json()
             if "errors" in data:
-                print(f"Erro ao acessar dados adicionais do usuário {user}: {data['errors']}")
+                print(f"Error fetching additional data for user {user}: {data['errors']}")
                 return {"repositories": 0, "primary_language": "N/A"}
             
             user_data = data.get("data", {}).get("user", {})
             if not user_data:
-                print(f"Usuário não encontrado ou sem dados: {user}")
+                print(f"User not found or no data available: {user}")
                 return {"repositories": 0, "primary_language": "N/A"}
 
             repositories = user_data.get("repositories", {}).get("totalCount", 0)
@@ -173,19 +194,19 @@ class GitHubUserData:
                 "primary_language": primary_language
             }
         else:
-            print(f"Erro ao acessar dados adicionais do usuário {user}: {response.status_code} {response.text}")
+            print(f"Error fetching additional data for user {user}: {response.status_code} {response.text}")
             return {"repositories": 0, "primary_language": "N/A"}
 
 
     def _parse_user_data(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Analisa os dados do usuário obtidos da API do GitHub.
+        Parses the user data obtained from the GitHub API.
 
         Args:
-            user_data (Dict[str, Any]): Dados brutos do usuário do GitHub.
+            user_data (Dict[str, Any]): Raw GitHub user data.
 
         Returns:
-            Dict[str, Any]: Dados analisados do usuário.
+            Dict[str, Any]: Parsed user data.
         """
         contributions = user_data.get("contributionsCollection", {}).get("contributionCalendar", {}).get("totalContributions", 0)
         repositories = user_data.get("repositories", {}).get("totalCount", 0)
@@ -227,10 +248,10 @@ class GitHubUserData:
     @staticmethod
     def _empty_user_data() -> Dict[str, Any]:
         """
-        Retorna um dicionário vazio para representar dados de usuário não encontrados ou com erro.
+        Returns an empty dictionary representing a user with no data or an error.
 
         Returns:
-            Dict[str, Any]: Dicionário vazio com valores padrão.
+            Dict[str, Any]: Empty dictionary with default values.
         """
         return {
             "contributions": 0,
@@ -243,11 +264,11 @@ class GitHubUserData:
 class CSVProcessor:
     def __init__(self, input_csv: str, output_csv: str):
         """
-        Inicializa a classe com os nomes dos arquivos CSV de entrada e saída.
+        Initializes the class with the input and output CSV filenames.
 
         Args:
-            input_csv (str): Nome do arquivo CSV de entrada.
-            output_csv (str): Nome do arquivo CSV de saída.
+            input_csv (str): Name of the input CSV file.
+            output_csv (str): Name of the output CSV file.
         """
         self.input_csv = input_csv
         self.output_csv = output_csv
@@ -255,8 +276,8 @@ class CSVProcessor:
 
     def _initialize_csv(self):
         """
-        Inicializa o arquivo CSV de saída com o cabeçalho. 
-        Esse método é chamado no início para garantir que o arquivo já exista e tenha um cabeçalho.
+        Initializes the output CSV file with the header. 
+        This method is called at the beginning to ensure the file exists and has a header.
         """
         with open(self.output_csv, mode='w', newline='') as file:
             fieldnames = ["user", "contributions", "repositories", "primary_language", "monthly_contributions", "contribution_types"]
@@ -265,10 +286,10 @@ class CSVProcessor:
 
     def read_users(self) -> List[str]:
         """
-        Lê a lista de usuários do arquivo CSV de entrada.
+        Reads the list of GitHub users from the input CSV file.
 
         Returns:
-            List[str]: Lista de nomes de usuários do GitHub.
+            List[str]: List of GitHub usernames.
         """
         with open(self.input_csv, mode='r', newline='') as file:
             reader = csv.reader(file)
@@ -276,38 +297,38 @@ class CSVProcessor:
 
     def write_user_data(self, result: Dict[str, Any]):
         """
-        Escreve os dados de um único usuário no arquivo CSV de saída.
+        Writes a single user's data to the output CSV file.
 
         Args:
-            result (Dict[str, Any]): Dicionário contendo os dados do usuário.
+            result (Dict[str, Any]): Dictionary containing the user's data.
         """
-        with open(self.output_csv, mode='a', newline='') as file:  # Use 'a' para abrir no modo append
+        with open(self.output_csv, mode='a', newline='') as file:  # Use 'a' to append data
             fieldnames = ["user", "contributions", "repositories", "primary_language", "monthly_contributions", "contribution_types"]
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             result["monthly_contributions"] = str(result["monthly_contributions"])
             result["contribution_types"] = str(result["contribution_types"])
             writer.writerow(result)
 
-        print(f"Dados do usuário {result['user']} salvos no arquivo {self.output_csv}.")
+        print(f"User data for {result['user']} saved to {self.output_csv}.")
 
 
 class GitHubContributorSummary:
     def __init__(self, token: str, input_csv: str, output_csv: str):
         """
-        Inicializa a classe com o token de autenticação do GitHub, nomes dos arquivos CSV de entrada e saída.
+        Initializes the class with the GitHub authentication token, input, and output CSV filenames.
 
         Args:
-            token (str): O token de autenticação do GitHub.
-            input_csv (str): Nome do arquivo CSV de entrada.
-            output_csv (str): Nome do arquivo CSV de saída.
+            token (str): GitHub authentication token.
+            input_csv (str): Name of the input CSV file.
+            output_csv (str): Name of the output CSV file.
         """
         self.github_user_data = GitHubUserData(token)
         self.csv_processor = CSVProcessor(input_csv, output_csv)
 
     def generate_summary(self):
         """
-        Gera um resumo dos dados dos contribuidores do GitHub e escreve no arquivo CSV de saída
-        imediatamente após processar os dados de cada usuário.
+        Generates a summary of GitHub contributors' data and writes it to the output CSV file
+        immediately after processing each user's data.
         """
         users = self.csv_processor.read_users()
         for user in users:
@@ -321,13 +342,11 @@ class GitHubContributorSummary:
                     "monthly_contributions": user_data["monthly_contributions"],
                     "contribution_types": user_data["contribution_types"]
                 }
-                # Escreve os dados do usuário no CSV após processar
                 self.csv_processor.write_user_data(result)
             except Exception as e:
-                print(f"Erro ao processar o usuário {user}: {e}")
+                print(f"Error processing user {user}: {e}")
 
 if __name__ == '__main__':
-    # Substitua esses valores pelos parâmetros desejados
     token = 'token'
     input_csv = 'input_csv.csv'
     output_csv = 'output_csv.csv'
