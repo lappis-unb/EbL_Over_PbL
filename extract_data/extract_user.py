@@ -126,7 +126,7 @@ if __name__ == '__main__':
     organization = 'organization'
     start_date = '2017-01-01T00:00:00Z'
     end_date = '2024-07-01T23:59:59Z'
-    output_csv = 'output_csv.csv'
+    output_csv = 'output_users.csv'
 
     github_contributors = GitHubContributors(token, organization, start_date, end_date, output_csv)
     github_contributors.run()

@@ -345,8 +345,8 @@ class GitHubContributorSummary:
 
 if __name__ == '__main__':
     token = 'token'
-    input_csv = 'input_csv.csv'
-    output_csv = 'output_csv.csv'
+    input_csv = 'output_users.csv'
+    output_csv = 'output_contribution.csv'
 
     summary_generator = GitHubContributorSummary(token, input_csv, output_csv)
     summary_generator.generate_summary()
